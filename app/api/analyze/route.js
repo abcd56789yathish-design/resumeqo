@@ -60,10 +60,12 @@ export async function POST(request) {
       );
     }
 
-    // ===== STEP 2: Decode the base64 data to Buffer =====
+    // ===== STEP 2: Decode the base64 data to Uint8Array =====
+    let uint8Array;
     let buffer;
     try {
       buffer = Buffer.from(fileData, "base64");
+      uint8Array = new Uint8Array(buffer);
     } catch (decodeError) {
       return NextResponse.json(
         { error: "Failed to decode file data. The file may be corrupted." },
@@ -71,7 +73,7 @@ export async function POST(request) {
       );
     }
 
-    if (buffer.length === 0) {
+    if (uint8Array.length === 0) {
       return NextResponse.json(
         { error: "The uploaded file is empty." },
         { status: 400 }
@@ -86,7 +88,7 @@ export async function POST(request) {
       if (extension === "pdf") {
         const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
         pdfjsLib.GlobalWorkerOptions.workerSrc = "";
-        const loadingTask = pdfjsLib.getDocument({ data: buffer });
+        const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
         const doc = await loadingTask.promise;
         const pages = [];
         for (let i = 1; i <= doc.numPages; i++) {

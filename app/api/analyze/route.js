@@ -75,11 +75,20 @@ export async function POST(request) {
 
     try {
       if (extension === "pdf") {
-        const { PDFParse } = await import("pdf-parse");
-        const pdf = new PDFParse({ data: buffer });
-        const result = await pdf.getText();
-        resumeText = result.text || "";
-        await pdf.destroy();
+        const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        const loadingTask = pdfjsLib.getDocument({ data: buffer });
+        const doc = await loadingTask.promise;
+        const pages = [];
+        for (let i = 1; i <= doc.numPages; i++) {
+          const page = await doc.getPage(i);
+          const content = await page.getTextContent();
+          const text = content.items.map((item) => item.str).join(" ");
+          pages.push(text);
+          page.cleanup();
+        }
+        resumeText = pages.join("\n\n");
+        await doc.destroy();
       } else if (extension === "docx") {
         // Parse DOCX using mammoth
         const mammoth = await import("mammoth");
@@ -111,10 +120,10 @@ export async function POST(request) {
       }
     } catch (parseError) {
       console.error("File parsing error:", parseError);
+      const detail = parseError?.message || "Unknown parsing error";
       return NextResponse.json(
         {
-          error:
-            "Failed to read the file. Make sure it's a valid PDF or Word document.",
+          error: `Failed to read the file: ${detail}`,
         },
         { status: 400 }
       );

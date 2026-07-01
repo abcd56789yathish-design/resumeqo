@@ -86,8 +86,7 @@ export async function POST(request) {
 
     try {
       if (extension === "pdf") {
-        const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
         const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
         const doc = await loadingTask.promise;
         const pages = [];

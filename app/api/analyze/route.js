@@ -138,7 +138,8 @@ export async function POST(request) {
     // ===== STEP 4: Build the prompt for OpenAI =====
     const prompt = `You are an expert resume reviewer and career coach.
 
-Analyze this resume and return a JSON response with EXACTLY this format:
+Analyze this resume and return a JSON response with EXACTLY this structure:
+
 {
   "overallScore": 75,
   "scoreBreakdown": {
@@ -150,31 +151,99 @@ Analyze this resume and return a JSON response with EXACTLY this format:
   },
   "strongPoints": [
     "Clear contact information",
-    "Good work experience section",
-    "Relevant skills listed"
+    "Good work experience section"
   ],
   "improvements": [
     {
-      "section": "Summary",
-      "issue": "Too generic",
-      "fix": "Add specific achievements"
+      "section": "Experience",
+      "originalText": "Responsible for managing team",
+      "issue": "Weak passive verb",
+      "fix": "Led a team of 5 engineers",
+      "rewrites": {
+        "concise": "Led team of 5 engineers",
+        "quantified": "Led team of 5 engineers, delivering 3 major projects on time",
+        "senior": "Spearheaded cross-functional engineering team of 5, driving 3 major initiatives to completion"
+      },
+      "metricPrompt": null
     },
     {
       "section": "Experience",
-      "issue": "No metrics used",
-      "fix": "Add numbers like increased sales by 30%"
+      "originalText": "Helped improve sales",
+      "issue": "No metrics",
+      "fix": "Increased sales by 30% within 6 months",
+      "rewrites": {
+        "concise": "Boosted sales revenue",
+        "quantified": "Increased sales by 30% ($500K) within 6 months",
+        "senior": "Drove 30% revenue growth ($500K) across territory in 6 months"
+      },
+      "metricPrompt": "How much did sales improve? (e.g., 30%, $500K)"
     }
   ],
   "missingKeywords": [
-    "React", "Node.js", "Agile"
+    {"keyword": "React", "importance": "high", "frequency": 5},
+    {"keyword": "Node.js", "importance": "medium", "frequency": 3},
+    {"keyword": "Agile", "importance": "medium", "frequency": 2}
   ],
+  "keywordGap": {
+    "fromJD": ${jobDescription ? `true` : `false`},
+    "missingFromResume": [
+      {"keyword": "TypeScript", "importance": "high", "mentionedInJD": ${jobDescription ? 4 : 0}},
+      {"keyword": "CI/CD", "importance": "medium", "mentionedInJD": ${jobDescription ? 2 : 0}}
+    ],
+    "presentInResume": [
+      {"keyword": "Python", "importance": "high", "mentionedInJD": ${jobDescription ? 3 : 0}}
+    ]
+  },
   "atsScore": 65,
   "atsIssues": [
     "Use standard section headings",
     "Remove tables and columns"
   ],
-  "topSuggestion": "Add measurable achievements to every job"
+  "topSuggestion": "Add measurable achievements to every job",
+  "industryBenchmark": {
+    "percentile": 72,
+    "role": "${jobTitle || "General"}",
+    "averageScore": 68,
+    "topScore": 92
+  },
+  "bullets": [
+    {
+      "text": "Responsible for managing a team",
+      "section": "Experience",
+      "type": "weak",
+      "rewrites": {
+        "concise": "Managed engineering team",
+        "quantified": "Managed team of 5 engineers, shipped 12 features",
+        "senior": "Directed engineering team of 5, delivering 12 features ahead of schedule"
+      },
+      "metricPrompt": null
+    },
+    {
+      "text": "Helped increase sales",
+      "section": "Experience",
+      "type": "needs-metrics",
+      "rewrites": {
+        "concise": "Increased sales revenue",
+        "quantified": "Increased sales by 35% ($400K) in Q3",
+        "senior": "Drove 35% revenue growth ($400K) as lead strategist"
+      },
+      "metricPrompt": "What was the sales increase? (% or $ amount)"
+    }
+  ],
+  "recruiterNotes": [
+    {"section": "Top third", "note": "Strong headline, weak summary", "timeSpent": "2s"},
+    {"section": "Middle", "note": "Good experience but no metrics", "timeSpent": "3s"},
+    {"section": "Bottom", "note": "Education section too long", "timeSpent": "1s"}
+  ]
 }
+
+GUIDELINES:
+- improvements: list 3-8 specific issues. For each, provide originalText, issue, fix, and rewrites (concise/quantified/senior variants). Set metricPrompt only when metrics are missing.
+- missingKeywords: simple list of keywords the resume lacks (synthesized from common industry terms${jobDescription ? " and the job description" : ""}).
+- keywordGap: if a job description is provided, extract keywords from it and compare. Otherwise, set fromJD=false and use common industry keywords.
+- bullets: list 3-6 individual bullet points that need rewriting. Include rewrites and metricPrompt where applicable.
+- recruiterNotes: simulate 3 notes a recruiter would make skimming this resume.
+- industryBenchmark: estimate how this resume ranks.
 
 Resume to analyze:
 ${resumeText}
@@ -182,11 +251,11 @@ ${resumeText}
 ${jobTitle ? `Job Title: ${jobTitle}` : ""}
 ${jobDescription ? `Job Description: ${jobDescription}` : ""}
 
-Return ONLY the JSON. No other text.`;
+Return ONLY valid JSON. No other text or markdown.`;
 
     // ===== STEP 5: Send to OpenAI =====
     const completion = await getOpenAIClient().chat.completions.create({
-      model: "gpt-4o-mini", // Fast and cost-effective model
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -198,8 +267,8 @@ Return ONLY the JSON. No other text.`;
           content: prompt,
         },
       ],
-      temperature: 0.7, // Balanced between creativity and consistency
-      max_tokens: 2000, // Limit response length
+      temperature: 0.7,
+      max_tokens: 4096,
     });
 
     // ===== STEP 6: Parse the AI response =====

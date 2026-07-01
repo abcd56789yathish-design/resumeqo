@@ -75,12 +75,11 @@ export async function POST(request) {
 
     try {
       if (extension === "pdf") {
-        // Parse PDF using pdf-parse
         const { PDFParse } = await import("pdf-parse");
         const pdf = new PDFParse({ data: buffer });
-        await pdf.load();
         const result = await pdf.getText();
         resumeText = result.text || "";
+        await pdf.destroy();
       } else if (extension === "docx") {
         // Parse DOCX using mammoth
         const mammoth = await import("mammoth");

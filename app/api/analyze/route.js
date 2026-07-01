@@ -11,17 +11,21 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-// Initialize OpenRouter client (OpenAI-compatible API)
-// OpenRouter gives access to GPT-4, Claude, Gemini, and more.
-// Get a free key at https://openrouter.ai/keys
-const openai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
-  defaultHeaders: {
-    "HTTP-Referer": "http://localhost:3000", // Your site for OpenRouter rankings
-    "X-Title": "Resumeqo", // Your app name for OpenRouter rankings
-  },
-});
+let openai;
+
+function getOpenAIClient() {
+  if (!openai) {
+    openai = new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: process.env.OPENROUTER_API_KEY,
+      defaultHeaders: {
+        "HTTP-Referer": process.env.SITE_URL || "http://localhost:3000",
+        "X-Title": "Resumeqo",
+      },
+    });
+  }
+  return openai;
+}
 
 /**
  * POST handler - receives and analyzes resumes
@@ -181,7 +185,7 @@ ${jobDescription ? `Job Description: ${jobDescription}` : ""}
 Return ONLY the JSON. No other text.`;
 
     // ===== STEP 5: Send to OpenAI =====
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o-mini", // Fast and cost-effective model
       messages: [
         {

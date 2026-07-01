@@ -7,8 +7,12 @@ import { createClient } from "@/utils/supabase/server";
 import NavbarMenu from "@/components/NavbarMenu";
 
 export default async function Navbar() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = await createClient();
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch {} // env vars missing or auth unavailable — treat as signed out
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--paper)]/88 backdrop-blur-md border-b border-[var(--line)]">

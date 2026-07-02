@@ -3,7 +3,7 @@
 // ============================================
 
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import NavbarMenu from "@/components/NavbarMenu";
 
 export default async function Navbar() {

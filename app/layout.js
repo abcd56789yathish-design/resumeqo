@@ -3,7 +3,6 @@
 // ============================================
 
 import "./globals.css";
-import Navbar from "@/components/Navbar";
 
 // Google Fonts via next/font for optimization
 import { Fraunces, JetBrains_Mono, Inter } from "next/font/google";
@@ -35,10 +34,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${jetbrainsMono.variable} ${inter.variable}`}>
-      <body>
-        <Navbar />
-        <main>{children}</main>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

@@ -8,15 +8,6 @@
 // 4. Sends to OpenRouter (OpenAI-compatible API) for analysis
 // 5. Returns structured results (score, improvements, etc.)
 
-if (typeof DOMMatrix === "undefined") {
-  global.DOMMatrix = class DOMMatrix {
-    constructor() {
-      this.a = 1; this.b = 0; this.c = 0; this.d = 1;
-      this.e = 0; this.f = 0;
-    }
-  };
-}
-
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -86,20 +77,11 @@ export async function POST(request) {
 
     try {
       if (extension === "pdf") {
-        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = process.cwd() + "/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs";
-        const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
-        const doc = await loadingTask.promise;
-        const pages = [];
-        for (let i = 1; i <= doc.numPages; i++) {
-          const page = await doc.getPage(i);
-          const content = await page.getTextContent();
-          const text = content.items.map((item) => item.str).join(" ");
-          pages.push(text);
-          page.cleanup();
-        }
-        resumeText = pages.join("\n\n");
-        await doc.destroy();
+        const { PDFParse, VerbosityLevel } = await import("pdf-parse");
+        const parser = new PDFParse({ data: buffer, verbosity: VerbosityLevel.ERRORS });
+        const result = await parser.getText();
+        resumeText = result.text;
+        await parser.destroy();
       } else if (extension === "docx") {
         // Parse DOCX using mammoth
         const mammoth = await import("mammoth");
@@ -133,9 +115,7 @@ export async function POST(request) {
       console.error("File parsing error:", parseError);
       const detail = parseError?.message || "Unknown parsing error";
       return NextResponse.json(
-        {
-          error: `Failed to read the file: ${detail}`,
-        },
+        { error: `Failed to read the file: ${detail}` },
         { status: 400 }
       );
     }
@@ -248,11 +228,6 @@ Analyze this resume and return a JSON response with EXACTLY this structure:
       },
       "metricPrompt": "What was the sales increase? (% or $ amount)"
     }
-  ],
-  "recruiterNotes": [
-    {"section": "Top third", "note": "Strong headline, weak summary", "timeSpent": "2s"},
-    {"section": "Middle", "note": "Good experience but no metrics", "timeSpent": "3s"},
-    {"section": "Bottom", "note": "Education section too long", "timeSpent": "1s"}
   ]
 }
 
@@ -261,7 +236,6 @@ GUIDELINES:
 - missingKeywords: simple list of keywords the resume lacks (synthesized from common industry terms${jobDescription ? " and the job description" : ""}).
 - keywordGap: if a job description is provided, extract keywords from it and compare. Otherwise, set fromJD=false and use common industry keywords.
 - bullets: list 3-6 individual bullet points that need rewriting. Include rewrites and metricPrompt where applicable.
-- recruiterNotes: simulate 3 notes a recruiter would make skimming this resume.
 - industryBenchmark: estimate how this resume ranks.
 
 Resume to analyze:

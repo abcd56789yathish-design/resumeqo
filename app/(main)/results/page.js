@@ -7,7 +7,6 @@ import ImprovementList from "@/components/ImprovementList";
 import BulletRewriter from "@/components/BulletRewriter";
 import KeywordGapReport from "@/components/KeywordGapReport";
 import VersionHistory from "@/components/VersionHistory";
-import RecruiterHeatmap from "@/components/RecruiterHeatmap";
 import {
   RotateCcw, ArrowUp, Download, Share2,
   CheckCircle, AlertTriangle, FileText, Sparkles
@@ -124,7 +123,7 @@ ${(results?.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
     overallScore = 0, scoreBreakdown = {}, strongPoints = [],
     improvements = [], missingKeywords = [], atsScore = 0,
     atsIssues = [], topSuggestion = "", bullets = [],
-    keywordGap, recruiterNotes = [], industryBenchmark
+    keywordGap, industryBenchmark
   } = results;
 
   const cats = [
@@ -233,8 +232,6 @@ ${(results?.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
             <p className="text-[var(--ink)]">{topSuggestion}</p>
           </div>
         )}
-
-        <RecruiterHeatmap recruiterNotes={recruiterNotes} />
 
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <button

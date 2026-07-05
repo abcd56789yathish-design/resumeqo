@@ -77,6 +77,10 @@ export async function POST(request) {
 
     try {
       if (extension === "pdf") {
+        if (typeof globalThis.DOMMatrix === "undefined") {
+          const { DOMMatrix } = await import("@napi-rs/canvas");
+          globalThis.DOMMatrix = DOMMatrix;
+        }
         const { PDFParse, VerbosityLevel } = await import("pdf-parse");
         const parser = new PDFParse({ data: buffer, verbosity: VerbosityLevel.ERRORS });
         const result = await parser.getText();
@@ -291,8 +295,11 @@ Return ONLY valid JSON. No other text or markdown.`;
       );
     }
 
-    // ===== STEP 7: Return the results =====
-    return NextResponse.json(analysisResult);
+    // ===== STEP 7: Return the results (with extracted text for cover letter) =====
+    return NextResponse.json({
+      ...analysisResult,
+      _resumeText: resumeText.substring(0, 5000),
+    });
   } catch (error) {
     console.error("Analysis API error:", error);
 

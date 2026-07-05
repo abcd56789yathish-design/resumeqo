@@ -8,7 +8,7 @@ function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [countdown, setCountdown] = useState(5);
-  const sessionId = searchParams.get("session_id");
+  const checkoutId = searchParams.get("checkoutId");
 
   useEffect(() => {
     if (countdown > 0) {
@@ -26,7 +26,7 @@ function SuccessContent() {
         <h1 className="font-serif font-[500] text-3xl text-[var(--ink)] mb-3">Payment Successful! 🎉</h1>
         <p className="text-[var(--ink-soft)] mb-6 text-[17px]">
           Welcome to <span className="font-semibold text-[var(--coral-dark)]">Resumeqo Pro</span>!
-          You now have unlimited resume reviews.
+          You now have <strong>5,000 credits</strong> to spend on resume reviews.
         </p>
         <div className="bg-[var(--green-light)] border border-[var(--green)] rounded-[3px] p-6 mb-8 text-left">
           <h2 className="font-serif font-[500] text-[17px] text-[var(--green)] mb-3 flex items-center gap-2">
@@ -34,7 +34,7 @@ function SuccessContent() {
           </h2>
           <ul className="space-y-2 text-sm text-[var(--ink)]">
             <li className="flex items-start gap-2"><span className="text-[var(--green)]">1.</span> Upload your resume for a detailed review</li>
-            <li className="flex items-start gap-2"><span className="text-[var(--green)]">2.</span> Get unlimited AI-powered analysis</li>
+            <li className="flex items-start gap-2"><span className="text-[var(--green)]">2.</span> Get AI-powered analysis and improvement suggestions</li>
             <li className="flex items-start gap-2"><span className="text-[var(--green)]">3.</span> Improve and land your dream job!</li>
           </ul>
         </div>
@@ -45,7 +45,7 @@ function SuccessContent() {
           Analyze Your Resume Now <ArrowRight className="w-5 h-5" />
         </button>
         <p className="text-[var(--ink-soft)] text-[13px] mt-4 font-mono">Redirecting in {countdown}s...</p>
-        {sessionId && <p className="text-[var(--line)] text-xs mt-6">Session: {sessionId}</p>}
+        {checkoutId && <p className="text-[var(--line)] text-xs mt-6">Checkout: {checkoutId}</p>}
       </div>
     </div>
   );

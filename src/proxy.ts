@@ -1,12 +1,30 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 
-export async function middleware(request: NextRequest) {
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+
+export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/api")) {
+    const result = apiLimiter(request);
+    if (result.limited) {
+      return new NextResponse(JSON.stringify({ error: "Too many requests, please try again later." }), {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(Math.ceil((result.reset - Date.now()) / 1000)),
+          "X-RateLimit-Limit": String(result.limit),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": String(Math.ceil(result.reset / 1000)),
+        },
+      });
+    }
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    console.warn("[middleware] Supabase env vars not configured — skipping auth check");
+    console.warn("[proxy] Supabase env vars not configured — skipping auth check");
     return NextResponse.next();
   }
 
@@ -36,7 +54,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   } catch (err) {
-    console.error("[middleware] Auth check failed:", err);
+    console.error("[proxy] Auth check failed:", err);
   }
 
   return supabaseResponse;

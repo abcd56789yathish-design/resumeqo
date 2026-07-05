@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Check, Copy } from "lucide-react";
+import { Sparkles, Check, Copy, Loader2, Wand2 } from "lucide-react";
 
 const TONES = [
   { key: "concise", label: "Concise", desc: "Short & direct" },
@@ -9,36 +9,70 @@ const TONES = [
   { key: "senior", label: "Senior", desc: "Leadership tone" },
 ];
 
-export default function BulletRewriter({ bullets = [] }) {
+export default function BulletRewriter({ bullets = [], resumeText = "" }) {
   const [selectedBullet, setSelectedBullet] = useState(0);
   const [selectedTone, setSelectedTone] = useState("quantified");
   const [applied, setApplied] = useState({});
   const [copied, setCopied] = useState({});
-  const [customInput, setCustomInput] = useState("");
+  const [rewrites, setRewrites] = useState({});
+  const [loading, setLoading] = useState({});
+  const [error, setError] = useState("");
 
   if (!bullets.length) return null;
 
   const bullet = bullets[selectedBullet];
-  const rewrite = bullet.rewrites?.[selectedTone];
+  const cachedRewrite = rewrites[`${selectedBullet}-${selectedTone}`];
+  const isLoading = loading[`${selectedBullet}-${selectedTone}`];
 
-  const handleApply = () => {
-    if (!rewrite) return;
-    const key = `${selectedBullet}-${selectedTone}`;
-    setApplied((prev) => ({ ...prev, [key]: true }));
-    setTimeout(() => {
-      setApplied((prev) => ({ ...prev, [key]: false }));
-    }, 2000);
+  const fetchRewrite = async (tone) => {
+    const key = `${selectedBullet}-${tone}`;
+    if (rewrites[key]) {
+      setSelectedTone(tone);
+      return;
+    }
+    setLoading((prev) => ({ ...prev, [key]: true }));
+    setError("");
+    try {
+      const res = await fetch("/api/rewrite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: bullet.text,
+          section: bullet.section,
+          tone,
+          context: resumeText.substring(0, 2000),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to rewrite");
+      setRewrites((prev) => ({ ...prev, [key]: data.rewrite }));
+      setSelectedTone(tone);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading((prev) => ({ ...prev, [key]: false }));
+    }
   };
 
   const handleCopy = () => {
-    if (!rewrite) return;
-    navigator.clipboard.writeText(rewrite);
+    const current = rewrites[`${selectedBullet}-${selectedTone}`] || bullet.rewrites?.[selectedTone];
+    if (!current) return;
+    navigator.clipboard.writeText(current);
     const key = `${selectedBullet}-${selectedTone}`;
     setCopied((prev) => ({ ...prev, [key]: true }));
-    setTimeout(() => {
-      setCopied((prev) => ({ ...prev, [key]: false }));
-    }, 2000);
+    setTimeout(() => setCopied((prev) => ({ ...prev, [key]: false })), 2000);
   };
+
+  const handleApply = () => {
+    const current = rewrites[`${selectedBullet}-${selectedTone}`] || bullet.rewrites?.[selectedTone];
+    if (!current) return;
+    navigator.clipboard.writeText(current);
+    const key = `${selectedBullet}-${selectedTone}`;
+    setApplied((prev) => ({ ...prev, [key]: true }));
+    setTimeout(() => setApplied((prev) => ({ ...prev, [key]: false })), 2000);
+  };
+
+  const getCurrentRewrite = () => rewrites[`${selectedBullet}-${selectedTone}`] || bullet.rewrites?.[selectedTone];
 
   return (
     <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6">
@@ -51,7 +85,7 @@ export default function BulletRewriter({ bullets = [] }) {
           {bullets.map((b, i) => (
             <button
               key={i}
-              onClick={() => { setSelectedBullet(i); setCustomInput(""); }}
+              onClick={() => { setSelectedBullet(i); setError(""); }}
               className={`font-mono text-[11px] px-3 py-1.5 rounded-[2px] transition-all ${
                 selectedBullet === i
                   ? "bg-[var(--ink)] text-white"
@@ -75,78 +109,86 @@ export default function BulletRewriter({ bullets = [] }) {
       </div>
 
       <div className="flex gap-2 mb-4">
-        {TONES.map((tone) => (
-          <button
-            key={tone.key}
-            onClick={() => setSelectedTone(tone.key)}
-            className={`flex-1 font-mono text-[11px] px-3 py-2 rounded-[2px] text-center transition-all ${
-              selectedTone === tone.key
-                ? "bg-[var(--ink)] text-white"
-                : "bg-white border border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink)]"
-            }`}
-          >
-            <div>{tone.label}</div>
-            <div className="text-[9px] opacity-60">{tone.desc}</div>
-          </button>
-        ))}
-      </div>
-
-      {rewrite && (
-        <div className="bg-[var(--green-light)] rounded-[3px] p-4 border border-[var(--green)] mb-4">
-          <p className="font-mono text-[10px] text-[var(--green)] uppercase mb-1">Rewritten</p>
-          <p className="text-sm text-[var(--ink)]">{rewrite}</p>
-        </div>
-      )}
-
-      {bullet.metricPrompt && (
-        <div className="mt-4 p-4 bg-white border border-[var(--coral)] rounded-[3px]">
-          <p className="font-mono text-[10px] text-[var(--coral-dark)] uppercase mb-2">
-            {bullet.metricPrompt}
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value)}
-              placeholder="e.g., 30%, $500K, 1000 users..."
-              className="flex-1 px-3 py-2 text-sm border border-[var(--line)] rounded-[2px] focus:outline-none focus:border-[var(--ink)] bg-transparent"
-            />
+        {TONES.map((tone) => {
+          const key = `${selectedBullet}-${tone.key}`;
+          const isCurrentLoading = loading[key];
+          return (
             <button
+              key={tone.key}
               onClick={() => {
-                if (customInput.trim()) {
-                  alert(`Metric-backed bullet generated! Preview:\n${bullet.text.replace(/improve\w*/i, `increased ${customInput}`)}`);
+                if (isCurrentLoading) return;
+                if (tone.key !== selectedTone) {
+                  fetchRewrite(tone.key);
                 }
               }}
-              className="font-mono text-[11px] bg-[var(--coral)] text-white px-4 py-2 rounded-[2px] hover:bg-[var(--coral-dark)] transition-all"
+              className={`flex-1 font-mono text-[11px] px-3 py-2 rounded-[2px] text-center transition-all ${
+                isCurrentLoading
+                  ? "bg-[var(--line)] text-[var(--ink-soft)] cursor-wait"
+                  : selectedTone === tone.key
+                  ? "bg-[var(--ink)] text-white"
+                  : "bg-white border border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink)]"
+              }`}
             >
-              Generate
+              <div className="flex items-center justify-center gap-1">
+                {isCurrentLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                {tone.label}
+              </div>
+              <div className="text-[9px] opacity-60">{tone.desc}</div>
             </button>
-          </div>
+          );
+        })}
+      </div>
+
+      {error && (
+        <div className="bg-[var(--coral-light)] border border-[var(--coral)] rounded-[3px] p-3 mb-4 text-sm text-[var(--coral-dark)]">
+          {error}
         </div>
       )}
 
-      <div className="flex gap-2">
-        <button
-          onClick={handleApply}
-          className="flex items-center gap-1.5 font-mono text-[12px] bg-[var(--ink)] text-white px-4 py-2 rounded-[2px] hover:bg-[var(--coral)] transition-all"
-        >
-          {applied[`${selectedBullet}-${selectedTone}`] ? (
-            <><Check className="w-4 h-4" /> Applied</>
-          ) : (
-            <><Check className="w-4 h-4" /> Apply Fix</>
-          )}
-        </button>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 font-mono text-[12px] bg-white border border-[var(--line)] text-[var(--ink-soft)] px-4 py-2 rounded-[2px] hover:border-[var(--ink)] transition-all"
-        >
-          {copied[`${selectedBullet}-${selectedTone}`] ? (
-            <><Copy className="w-4 h-4" /> Copied</>
-          ) : (
-            <><Copy className="w-4 h-4" /> Copy</>
-          )}
-        </button>
-      </div>
+      {getCurrentRewrite() && (
+        <div className="bg-[var(--green-light)] rounded-[3px] p-4 border border-[var(--green)] mb-4">
+          <p className="font-mono text-[10px] text-[var(--green)] uppercase mb-1">Rewritten</p>
+          <p className="text-sm text-[var(--ink)]">{getCurrentRewrite()}</p>
+        </div>
+      )}
+
+      {!getCurrentRewrite() && !isLoading && (
+        <div className="bg-white border border-dashed border-[var(--line)] rounded-[3px] p-4 mb-4 text-center">
+          <p className="text-sm text-[var(--ink-soft)]">Select a tone above to generate an AI rewrite</p>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="bg-white border border-dashed border-[var(--line)] rounded-[3px] p-4 mb-4 text-center">
+          <Loader2 className="w-5 h-5 animate-spin text-[var(--coral)] mx-auto mb-2" />
+          <p className="text-sm text-[var(--ink-soft)]">Rewriting with AI...</p>
+        </div>
+      )}
+
+      {getCurrentRewrite() && (
+        <div className="flex gap-2">
+          <button
+            onClick={handleApply}
+            className="flex items-center gap-1.5 font-mono text-[12px] bg-[var(--ink)] text-white px-4 py-2 rounded-[2px] hover:bg-[var(--coral)] transition-all"
+          >
+            {applied[`${selectedBullet}-${selectedTone}`] ? (
+              <><Check className="w-4 h-4" /> Copied!</>
+            ) : (
+              <><Wand2 className="w-4 h-4" /> Apply Fix</>
+            )}
+          </button>
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 font-mono text-[12px] bg-white border border-[var(--line)] text-[var(--ink-soft)] px-4 py-2 rounded-[2px] hover:border-[var(--ink)] transition-all"
+          >
+            {copied[`${selectedBullet}-${selectedTone}`] ? (
+              <><Copy className="w-4 h-4" /> Copied</>
+            ) : (
+              <><Copy className="w-4 h-4" /> Copy</>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

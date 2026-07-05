@@ -27,7 +27,9 @@ export default async function Navbar() {
 
         <div className="hidden md:flex items-center gap-8 text-sm text-[var(--ink-soft)]">
           <a href="/" className="hover:text-[var(--ink)] transition-colors">Home</a>
-          <a href="/review" className="hover:text-[var(--ink)] transition-colors">How it works</a>
+          <a href="/review" className="hover:text-[var(--ink)] transition-colors">Review</a>
+          <a href="/tailor" className="hover:text-[var(--ink)] transition-colors">Tailor</a>
+          <a href="/outreach" className="hover:text-[var(--ink)] transition-colors">Outreach</a>
           <a href="/pricing" className="hover:text-[var(--ink)] transition-colors">Pricing</a>
         </div>
 
@@ -54,7 +56,9 @@ export default async function Navbar() {
 
         <NavbarMenu>
           <Link href="/" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Home</Link>
-          <Link href="/review" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">How it works</Link>
+          <Link href="/review" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Review</Link>
+          <Link href="/tailor" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Tailor</Link>
+          <Link href="/outreach" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Outreach</Link>
           <Link href="/pricing" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Pricing</Link>
           {user ? (
             <>

@@ -3,27 +3,29 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import UploadBox from "@/components/UploadBox";
-import { Loader2, Lock, X, Sparkles, AlertCircle } from "lucide-react";
+import { Loader2, Sparkles, AlertCircle, Plus, Layers, Lock, X } from "lucide-react";
 
-const FREE_REVIEW_KEY = "resumeqo_free_review_used";
+const PRO_KEY = "resumeqo_pro";
+
+function isPro() {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(PRO_KEY) === "true";
+}
 
 export default function ReviewPage() {
   const router = useRouter();
   const [file, setFile] = useState(null);
-  const [jobTitle, setJobTitle] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
+  const [fileText, setFileText] = useState("");
+  const [roles, setRoles] = useState([{ jobTitle: "", jobDescription: "" }]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [freeReviewsLeft, setFreeReviewsLeft] = useState(1);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeMessage, setUpgradeMessage] = useState("");
+  const [isProPlan, setIsProPlan] = useState(false);
 
   useEffect(() => {
-    const used = localStorage.getItem(FREE_REVIEW_KEY);
-    if (used === "true") {
-      setShowUpgradeModal(true);
-      setFreeReviewsLeft(0);
-    }
+    setIsProPlan(isPro());
   }, []);
 
   const handleFileSelect = useCallback((selectedFile) => {
@@ -49,12 +51,43 @@ export default function ReviewPage() {
     setError("");
   }, []);
 
+  const addRole = () => {
+    if (roles.length >= 3) return;
+    if (roles.length >= 1 && !isProPlan) {
+      setUpgradeMessage("Multi-role targeting is a Pro feature. Upgrade to compare your resume against multiple job descriptions at once.");
+      setShowUpgrade(true);
+      return;
+    }
+    setRoles((prev) => [...prev, { jobTitle: "", jobDescription: "" }]);
+  };
+
+  const removeRole = (index) => {
+    if (roles.length <= 1) return;
+    setRoles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateRole = (index, field, value) => {
+    setRoles((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
   const readFileAsBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result.split(",")[1]);
       reader.onerror = () => reject(new Error("Failed to read file"));
       reader.readAsDataURL(file);
+    });
+
+  const readFileAsText = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsText(file);
     });
 
   const handleSubmit = async () => {
@@ -73,29 +106,59 @@ export default function ReviewPage() {
       setLoadingStep("Analyzing content...");
       await new Promise((r) => setTimeout(r, 600));
 
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileData: base64Data,
-          fileName: file.name,
-          fileType: file.type,
-          jobTitle,
-          jobDescription,
-        }),
-      });
+      const activeRoles = roles.filter((r) => r.jobTitle || r.jobDescription);
+      if (activeRoles.length === 0) activeRoles.push(roles[0]);
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Analysis failed. Please try again.");
+      const results = [];
+      for (let i = 0; i < activeRoles.length; i++) {
+        const role = activeRoles[i];
+        setLoadingStep(`Analyzing for "${role.jobTitle || `Role ${i + 1}`}"...`);
+
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileData: base64Data,
+            fileName: file.name,
+            fileType: file.type,
+            jobTitle: role.jobTitle,
+            jobDescription: role.jobDescription,
+          }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Analysis failed. Please try again.");
+        }
+
+        const data = await res.json();
+        if (data._resumeText) {
+          sessionStorage.setItem("resumeqo_resume_text", data._resumeText);
+        }
+        data.roleName = role.jobTitle || `Role ${i + 1}`;
+        results.push(data);
       }
 
       setLoadingStep("Generating score...");
       await new Promise((r) => setTimeout(r, 600));
 
-      const data = await res.json();
-      localStorage.setItem(FREE_REVIEW_KEY, "true");
-      sessionStorage.setItem("resumeResults", JSON.stringify(data));
+      if (activeRoles.length === 1) {
+        sessionStorage.setItem("resumeResults", JSON.stringify(results[0]));
+      } else {
+        sessionStorage.setItem("resumeResults", JSON.stringify(results));
+      }
+
+      const resumeText = sessionStorage.getItem("resumeqo_resume_text") || "";
+      if (resumeText) {
+        const prevResults = sessionStorage.getItem("resumeResults");
+        if (prevResults) {
+          sessionStorage.setItem("resumeqo_before_results", prevResults);
+        }
+      }
+
+      sessionStorage.setItem("resumeqo_job_title", activeRoles[0]?.jobTitle || "");
+      sessionStorage.setItem("resumeqo_job_desc", activeRoles[0]?.jobDescription || "");
+
       router.push("/results");
     } catch (err) {
       setError(err.message || "Something went wrong.");
@@ -109,9 +172,14 @@ export default function ReviewPage() {
     <div className="relative z-[1] min-h-screen py-16 px-8">
       <div className="max-w-[640px] mx-auto">
         <div className="text-center mb-10">
-          <div className="font-mono text-[12px] tracking-[0.06em] text-[var(--coral-dark)] uppercase flex items-center justify-center gap-2 mb-4">
-            <span className="w-[6px] h-[6px] bg-[var(--coral)] rounded-full animate-pulse-dot"></span>
-            Free reviews left: {freeReviewsLeft}
+          <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${isProPlan ? "text-[var(--green)]" : "text-[var(--ink-soft)]"}`}>
+            <span className={`w-[6px] h-[6px] rounded-full animate-pulse-dot ${isProPlan ? "bg-[var(--green)]" : "bg-[var(--coral)]"}`}></span>
+            {isProPlan ? "Pro mode — all features unlocked" : "Free tier — 1 role, upgrade for multi-role"}
+            {!isProPlan && (
+              <button onClick={() => { localStorage.setItem(PRO_KEY, "true"); window.location.reload(); }} className="font-mono text-[10px] text-[var(--coral)] hover:text-[var(--coral-dark)] underline ml-1">
+                Enable Pro (dev)
+              </button>
+            )}
           </div>
           <h1 className="font-serif font-[500] text-[clamp(32px,4vw,42px)] leading-[1.1] text-[var(--ink)]">
             Review Your Resume
@@ -129,40 +197,73 @@ export default function ReviewPage() {
           )}
 
           <div className="border-t border-[var(--line)] pt-6">
-            <h3 className="font-serif font-[500] text-[17px] text-[var(--ink)] mb-4">
-              Job Details{" "}
-              <span className="font-sans text-[var(--ink-soft)] text-[13px] font-normal">
-                (optional but better results)
-              </span>
-            </h3>
-
-            <div className="mb-4">
-              <label htmlFor="jobTitle" className="block text-sm font-medium text-[var(--ink-soft)] mb-1">
-                Job Title Applying For
-              </label>
-              <input
-                id="jobTitle"
-                type="text"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="e.g., Software Engineer"
-                className="w-full px-4 py-2.5 border border-[var(--line)] rounded-[3px] focus:outline-none focus:border-[var(--ink)] transition-colors text-[var(--ink)] bg-transparent"
-              />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-serif font-[500] text-[17px] text-[var(--ink)]">
+                Target Roles{" "}
+                <span className="font-sans text-[var(--ink-soft)] text-[13px] font-normal">
+                  (up to 3 for multi-role analysis)
+                </span>
+              </h3>
+              {roles.length < 3 && (
+                <button
+                  onClick={addRole}
+                  className="font-mono text-[11px] text-[var(--coral)] hover:text-[var(--coral-dark)] transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" /> Add Role
+                </button>
+              )}
             </div>
 
-            <div className="mb-4">
-              <label htmlFor="jobDesc" className="block text-sm font-medium text-[var(--ink-soft)] mb-1">
-                Job Description (paste here)
-              </label>
-              <textarea
-                id="jobDesc"
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                placeholder="Paste the full job description here for a more targeted analysis..."
-                rows={5}
-                className="w-full px-4 py-2.5 border border-[var(--line)] rounded-[3px] focus:outline-none focus:border-[var(--ink)] transition-colors text-[var(--ink)] bg-transparent resize-none"
-              />
-            </div>
+            {roles.length > 1 && (
+              <div className="flex gap-2 mb-4">
+                <Layers className="w-4 h-4 text-[var(--coral)]" />
+                <span className="font-mono text-[11px] text-[var(--ink-soft)]">
+                  Multi-role mode: {roles.length} target{roles.length > 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
+
+            {roles.map((role, index) => (
+              <div key={index} className={`p-4 mb-4 rounded-[3px] ${roles.length > 1 ? "bg-[var(--line)]/30 border border-[var(--line)]" : ""}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-[11px] text-[var(--ink-soft)] uppercase">
+                    Role {index + 1}
+                  </span>
+                  {roles.length > 1 && (
+                    <button
+                      onClick={() => removeRole(index)}
+                      className="p-1 hover:bg-[var(--coral-light)] rounded-full transition-colors"
+                    >
+                      <X className="w-4 h-4 text-[var(--coral-dark)]" />
+                    </button>
+                  )}
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">
+                    Job Title
+                  </label>
+                  <input
+                    type="text"
+                    value={role.jobTitle}
+                    onChange={(e) => updateRole(index, "jobTitle", e.target.value)}
+                    placeholder="e.g., Software Engineer"
+                    className="w-full px-4 py-2.5 border border-[var(--line)] rounded-[3px] focus:outline-none focus:border-[var(--ink)] transition-colors text-[var(--ink)] bg-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">
+                    Job Description
+                  </label>
+                  <textarea
+                    value={role.jobDescription}
+                    onChange={(e) => updateRole(index, "jobDescription", e.target.value)}
+                    placeholder="Paste the full job description here for a more targeted analysis..."
+                    rows={4}
+                    className="w-full px-4 py-2.5 border border-[var(--line)] rounded-[3px] focus:outline-none focus:border-[var(--ink)] transition-colors text-[var(--ink)] bg-transparent resize-none"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
 
           <button
@@ -180,53 +281,34 @@ export default function ReviewPage() {
                 {loadingStep}
               </>
             ) : (
-              "Analyze My Resume →"
+              `Analyze${roles.length > 1 ? ` ${roles.length} Roles` : " My Resume"} →`
             )}
           </button>
 
           {!isLoading && (
             <p className="text-center text-[13px] text-[var(--ink-soft)] font-mono">
               ⚡ Takes about 30 seconds
+              {roles.length > 1 && ` (${roles.length}x analysis)`}
             </p>
           )}
         </div>
       </div>
 
-      {showUpgradeModal && (
+      {showUpgrade && (
         <div className="fixed inset-0 bg-[var(--ink)]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[8px_8px_0_rgba(22,33,61,0.12)] max-w-md w-full p-8 relative animate-fade-in">
-            <button
-              onClick={() => setShowUpgradeModal(false)}
-              className="absolute top-4 right-4 p-1 hover:bg-[var(--coral-light)] rounded-full transition-colors"
-              aria-label="Close"
-            >
+          <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[8px_8px_0_rgba(22,33,61,0.12)] max-w-md w-full p-8 relative">
+            <button onClick={() => setShowUpgrade(false)} className="absolute top-4 right-4 p-1 hover:bg-[var(--coral-light)] rounded-full transition-colors">
               <X className="w-5 h-5 text-[var(--ink-soft)]" />
             </button>
-
             <div className="w-16 h-16 bg-[var(--line)] rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-[var(--ink)]" />
             </div>
-
-            <h3 className="text-2xl font-serif font-[500] text-center text-[var(--ink)] mb-3">
-              Free Review Used
-            </h3>
-
-            <p className="text-[var(--ink-soft)] text-center mb-6">
-              You&apos;ve used your free review! Upgrade to Pro for unlimited reviews.
-            </p>
-
-            <button
-              onClick={() => { setShowUpgradeModal(false); router.push("/pricing"); }}
-              className="w-full font-mono text-[14px] font-medium bg-[var(--coral)] text-white py-[15px] rounded-[3px] shadow-[3px_3px_0_var(--coral-dark)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all mb-3 flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              Upgrade to Pro - $19/month
+            <h3 className="text-2xl font-serif font-[500] text-center text-[var(--ink)] mb-3">Pro Feature</h3>
+            <p className="text-[var(--ink-soft)] text-center mb-6">{upgradeMessage}</p>
+            <button onClick={() => router.push("/pricing")} className="w-full font-mono text-[14px] font-medium bg-[var(--coral)] text-white py-[15px] rounded-[3px] shadow-[3px_3px_0_var(--coral-dark)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all mb-3 flex items-center justify-center gap-2">
+              <Sparkles className="w-5 h-5" /> Upgrade to Pro — $19/month
             </button>
-
-            <button
-              onClick={() => setShowUpgradeModal(false)}
-              className="w-full text-[var(--ink-soft)] hover:text-[var(--ink)] py-2 font-medium transition-colors"
-            >
+            <button onClick={() => setShowUpgrade(false)} className="w-full text-[var(--ink-soft)] hover:text-[var(--ink)] py-2 font-medium transition-colors">
               Maybe Later
             </button>
           </div>

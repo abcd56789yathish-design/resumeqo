@@ -17,6 +17,7 @@ function isPro() {
 
 export default function TailorPage() {
   const router = useRouter();
+  const [pro, setPro] = useState(false);
   const [file, setFile] = useState(null);
   const [resumeText, setResumeText] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -29,6 +30,7 @@ export default function TailorPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
+    setPro(isPro());
     const stored = sessionStorage.getItem("resumeqo_resume_text");
     if (stored) setResumeText(stored);
     const title = sessionStorage.getItem("resumeqo_job_title");
@@ -173,10 +175,10 @@ export default function TailorPage() {
     <div className="relative z-[1] min-h-screen py-16 px-8">
       <div className="max-w-[720px] mx-auto">
         <div className="text-center mb-10">
-          <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${isPro() ? "text-[var(--green)]" : "text-[var(--coral-dark)]"}`}>
-            <span className={`w-[6px] h-[6px] rounded-full animate-pulse-dot ${isPro() ? "bg-[var(--green)]" : "bg-[var(--coral)]"}`}></span>
-            {isPro() ? "Pro feature — full access" : "Pro feature"}
-            {!isPro() && (
+          <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${pro ? "text-[var(--green)]" : "text-[var(--coral-dark)]"}`}>
+            <span className={`w-[6px] h-[6px] rounded-full animate-pulse-dot ${pro ? "bg-[var(--green)]" : "bg-[var(--coral)]"}`}></span>
+            {pro ? "Pro feature — full access" : "Pro feature"}
+            {!pro && (
               <button onClick={() => { localStorage.setItem(PRO_KEY, "true"); window.location.reload(); }} className="font-mono text-[10px] text-[var(--coral)] hover:text-[var(--coral-dark)] underline ml-1">
                 Enable Pro (dev)
               </button>

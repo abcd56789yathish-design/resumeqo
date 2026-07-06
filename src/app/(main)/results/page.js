@@ -36,6 +36,7 @@ function getScoreLabel(score) {
 
 export default function ResultsPage() {
   const router = useRouter();
+  const [pro, setPro] = useState(false);
   const [allResults, setAllResults] = useState([]);
   const [activeRole, setActiveRole] = useState(0);
   const [animatedScores, setAnimatedScores] = useState({});
@@ -51,6 +52,7 @@ export default function ResultsPage() {
   const [upgradeMessage, setUpgradeMessage] = useState("");
 
   useEffect(() => {
+    setPro(isPro());
     const stored = sessionStorage.getItem("resumeResults");
     if (stored) {
       try {
@@ -214,10 +216,10 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
     <div className="relative z-[1] min-h-screen py-12 px-8">
       <div className="max-w-[720px] mx-auto">
         <div className="text-center mb-10">
-          <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${isPro() ? "text-[var(--green)]" : "text-[var(--ink-soft)]"}`}>
-            <span className={`w-[6px] h-[6px] rounded-full animate-pulse-dot ${isPro() ? "bg-[var(--green)]" : "bg-[var(--coral)]"}`}></span>
-            {isPro() ? "Pro mode" : "Free review"}
-            {!isPro() && (
+          <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${pro ? "text-[var(--green)]" : "text-[var(--ink-soft)]"}`}>
+            <span className={`w-[6px] h-[6px] rounded-full animate-pulse-dot ${pro ? "bg-[var(--green)]" : "bg-[var(--coral)]"}`}></span>
+            {pro ? "Pro mode" : "Free review"}
+            {!pro && (
               <button onClick={() => { localStorage.setItem(PRO_KEY, "true"); window.location.reload(); }} className="font-mono text-[10px] text-[var(--coral)] hover:text-[var(--coral-dark)] underline ml-1">
                 Enable Pro (dev)
               </button>
@@ -278,7 +280,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
           </div>
         )}
 
-        {isPro() ? (
+        {pro ? (
           <VersionHistory currentScore={overallScore} currentResults={results} onRestoreVersion={handleRestoreVersion} />
         ) : (
           <div className="bg-[var(--paper-card)] border border-[var(--line)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6 opacity-60 relative">
@@ -338,7 +340,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
         )}
 
         {bullets.length > 0 && (
-          isPro() ? (
+          pro ? (
             <BulletRewriter bullets={bullets} resumeText={typeof window !== "undefined" ? sessionStorage.getItem("resumeqo_resume_text") || "" : ""} />
           ) : (
             <div className="bg-[var(--paper-card)] border border-[var(--line)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6 opacity-60 relative">
@@ -448,7 +450,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
               }`}
             >
               <Eye className="w-4 h-4" /> {showBeforeAfter ? "Hide" : "Show"} Before/After Comparison
-              {!isPro() && <Lock className="w-3 h-3 text-[var(--coral)]" />}
+              {!pro && <Lock className="w-3 h-3 text-[var(--coral)]" />}
             </button>
           </div>
         )}

@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import NavbarMenu from "@/components/NavbarMenu";
+import NavbarMobile from "@/components/NavbarMobile";
 
 export default async function Navbar() {
   let user = null;
@@ -13,6 +13,14 @@ export default async function Navbar() {
     const result = await supabase.auth.getUser();
     user = result.data.user;
   } catch {} // env vars missing or auth unavailable — treat as signed out
+
+  const links = [
+    { href: "/", label: "Home" },
+    { href: "/review", label: "Review" },
+    { href: "/tailor", label: "Tailor" },
+    { href: "/outreach", label: "Outreach" },
+    { href: "/pricing", label: "Pricing" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--paper)]/88 backdrop-blur-md border-b border-[var(--line)]">
@@ -26,11 +34,9 @@ export default async function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm text-[var(--ink-soft)]">
-          <a href="/" className="hover:text-[var(--ink)] transition-colors">Home</a>
-          <a href="/review" className="hover:text-[var(--ink)] transition-colors">Review</a>
-          <a href="/tailor" className="hover:text-[var(--ink)] transition-colors">Tailor</a>
-          <a href="/outreach" className="hover:text-[var(--ink)] transition-colors">Outreach</a>
-          <a href="/pricing" className="hover:text-[var(--ink)] transition-colors">Pricing</a>
+          {links.map((l) => (
+            <a key={l.href} href={l.href} className="hover:text-[var(--ink)] transition-colors">{l.label}</a>
+          ))}
         </div>
 
         {user ? (
@@ -54,27 +60,7 @@ export default async function Navbar() {
           </Link>
         )}
 
-        <NavbarMenu>
-          <Link href="/" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Home</Link>
-          <Link href="/review" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Review</Link>
-          <Link href="/tailor" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Tailor</Link>
-          <Link href="/outreach" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Outreach</Link>
-          <Link href="/pricing" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">Pricing</Link>
-          {user ? (
-            <>
-              <span className="text-sm text-[var(--ink-soft)]">{user.email}</span>
-              <form action="/auth/signout" method="post">
-                <button type="submit" className="font-mono text-[13px] font-medium bg-[var(--coral)] text-white px-[18px] py-[10px] rounded-[3px] text-center mt-2 w-full">
-                  Sign out
-                </button>
-              </form>
-            </>
-          ) : (
-            <Link href="/login" className="font-mono text-[13px] font-medium bg-[var(--ink)] text-[var(--paper)] px-[18px] py-[10px] rounded-[3px] border border-[var(--ink)] text-center mt-2">
-              Sign in ?
-            </Link>
-          )}
-        </NavbarMenu>
+        <NavbarMobile user={user} links={links} />
       </nav>
     </header>
   );

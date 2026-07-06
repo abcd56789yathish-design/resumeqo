@@ -77,16 +77,9 @@ export async function POST(request) {
 
     try {
       if (extension === "pdf") {
-        const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
-        const pdf = await getDocument({ data: uint8Array }).promise;
-        const pages = [];
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          const text = content.items.map((item) => item.str).join(" ");
-          pages.push(text);
-        }
-        resumeText = pages.join("\n\n");
+        const pdfParse = (await import("pdf-parse")).default;
+        const data = await pdfParse(buffer);
+        resumeText = data.text;
       } else if (extension === "docx") {
         // Parse DOCX using mammoth
         const mammoth = await import("mammoth");

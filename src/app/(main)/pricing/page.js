@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Check, X, Sparkles, Loader2, ArrowRight, ArrowUp, ArrowDown,
-  RefreshCw, FileEdit, Layers, Eye, AlertTriangle, CheckCircle, PenLine, Copy, WandSparkles, MessageSquare, Send
+  RefreshCw, FileEdit, Layers, Eye, AlertTriangle, CheckCircle, PenLine, Copy, WandSparkles, MessageSquare, Send, User
 } from "lucide-react";
 
 const REWRITE_EXAMPLES = [
@@ -78,6 +78,7 @@ const DEMOS = [
   { id: "coverletter", label: "Cover Letter", icon: PenLine },
   { id: "tailor", label: "Tailor Resume", icon: WandSparkles },
   { id: "outreach", label: "Cold Outreach", icon: MessageSquare },
+  { id: "linkedin", label: "LinkedIn About", icon: User },
 ];
 
 export default function PricingPage() {
@@ -110,6 +111,7 @@ export default function PricingPage() {
         ["Score history tracking", false],
         ["Priority support", false],
         ["Interview Q&A Coach", false],
+        ["LinkedIn About section generator", false],
       ],
       cta: "Get Started Free",
       action: () => router.push("/review"),
@@ -128,6 +130,7 @@ export default function PricingPage() {
         ["AI resume tailoring for any job description", true],
         ["Cold outreach writer (LinkedIn DM & email)", true],
         ["Interview Q&A Coach", true],
+        ["LinkedIn About section generator", true],
       ],
       cta: "Upgrade to Pro",
       action: handleProPlan,
@@ -354,6 +357,44 @@ export default function PricingPage() {
               <div className="flex items-center gap-3">
                 <FileEdit className="w-5 h-5 text-[var(--green)]" />
                 <span className="font-mono text-[13px]">Every bullet rewritten. Keywords optimized. Ready-to-download PDF.</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeDemo === "linkedin" && (
+          <div className="space-y-4">
+            <p className="text-[15px] text-[var(--ink)] mb-4">Your resume rewritten into a first-person LinkedIn About section — pick your tone:</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="border border-[var(--ink)] rounded-[3px] p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-mono text-[10px] bg-[var(--ink)] text-white px-2 py-0.5 rounded-[2px]">Professional</span>
+                </div>
+                <p className="text-sm text-[var(--ink)] leading-relaxed italic">
+                  &ldquo;I&apos;m a product manager with 6 years of experience driving 0-to-1 product launches and cross-functional team leadership. At TechFlow, I grew a B2B platform from 0 to 50,000 users and increased enterprise deal size by 65% through data-informed strategy. I specialize in user research, roadmap prioritization, and building products that deliver measurable business impact.&rdquo;
+                </p>
+                <div className="mt-3 flex items-center gap-3 text-[11px] text-[var(--ink-soft)] font-mono">
+                  <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-[var(--green)]" /> First-person narrative</span>
+                  <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-[var(--green)]" /> Resume metrics woven in</span>
+                </div>
+              </div>
+              <div className="border border-[var(--green)] rounded-[3px] p-5 bg-[var(--green-light)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-mono text-[10px] bg-[var(--green)] text-white px-2 py-0.5 rounded-[2px]">Conversational</span>
+                </div>
+                <p className="text-sm text-[var(--ink)] leading-relaxed italic">
+                  &ldquo;I build products people actually want to use. Over the last 6 years, I&apos;ve helped take a B2B platform from idea to 50K users — and along the way, figured out how to turn user research into features that actually move metrics. I believe the best products come from listening hard, moving fast, and never losing sight of the problem you&apos;re solving.&rdquo;
+                </p>
+                <div className="mt-3 flex items-center gap-3 text-[11px] text-[var(--ink-soft)] font-mono">
+                  <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-[var(--green)]" /> Natural, non-corporate voice</span>
+                  <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-[var(--green)]" /> Highlights personality</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[var(--ink)] text-white p-4 rounded-[3px] flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <User className="w-5 h-5 text-[var(--green)]" />
+                <span className="font-mono text-[13px]">Goes beyond your resume — tells your story in your voice.</span>
               </div>
             </div>
           </div>

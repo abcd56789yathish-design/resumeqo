@@ -77,15 +77,16 @@ export async function POST(request) {
 
     try {
       if (extension === "pdf") {
-        if (typeof globalThis.DOMMatrix === "undefined") {
-          const { DOMMatrix } = await import("@napi-rs/canvas");
-          globalThis.DOMMatrix = DOMMatrix;
+        const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+        const pdf = await getDocument({ data: uint8Array }).promise;
+        const pages = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const text = content.items.map((item) => item.str).join(" ");
+          pages.push(text);
         }
-        const { PDFParse, VerbosityLevel } = await import("pdf-parse");
-        const parser = new PDFParse({ data: buffer, verbosity: VerbosityLevel.ERRORS });
-        const result = await parser.getText();
-        resumeText = result.text;
-        await parser.destroy();
+        resumeText = pages.join("\n\n");
       } else if (extension === "docx") {
         // Parse DOCX using mammoth
         const mammoth = await import("mammoth");

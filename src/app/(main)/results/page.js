@@ -213,7 +213,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
   const difference = beforeResults ? overallScore - (beforeResults.overallScore || 0) : null;
 
   return (
-    <div className="relative z-[1] min-h-screen py-12 px-8">
+    <div className="relative z-[1] min-h-screen py-12 px-6 sm:px-8">
       <div className="max-w-[720px] mx-auto">
         <div className="text-center mb-10">
           <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${pro ? "text-[var(--green)]" : "text-[var(--ink-soft)]"}`}>
@@ -283,7 +283,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
         {pro ? (
           <VersionHistory currentScore={overallScore} currentResults={results} onRestoreVersion={handleRestoreVersion} />
         ) : (
-          <div className="bg-[var(--paper-card)] border border-[var(--line)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6 opacity-60 relative">
+            <div className="bg-[var(--paper-card)] border border-[var(--line)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6 opacity-60 relative">
             <div className="absolute inset-0 flex items-center justify-center bg-[var(--paper-card)]/40 backdrop-blur-[1px] z-10">
               <button
                 onClick={() => { setUpgradeMessage("Score history tracking is a Pro feature. Track your improvement over time with version history."); setShowUpgrade(true); }}
@@ -296,7 +296,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
           </div>
         )}
 
-        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6">
+        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6">
           <h2 className="font-serif font-[500] text-[18px] text-[var(--ink)] mb-5">Score Breakdown</h2>
           <div className="space-y-4">
             {cats.map((cat) => {
@@ -318,7 +318,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
         </div>
 
         {strongPoints.length > 0 && (
-          <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6">
+          <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6">
             <h2 className="font-serif font-[500] text-[18px] text-[var(--ink)] mb-4 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-[var(--green)]" /> Strong Points
             </h2>
@@ -343,7 +343,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
           pro ? (
             <BulletRewriter bullets={bullets} resumeText={typeof window !== "undefined" ? sessionStorage.getItem("resumeqo_resume_text") || "" : ""} />
           ) : (
-            <div className="bg-[var(--paper-card)] border border-[var(--line)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6 opacity-60 relative">
+          <div className="bg-[var(--paper-card)] border border-[var(--line)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6 opacity-60 relative">
               <div className="absolute inset-0 flex items-center justify-center bg-[var(--paper-card)]/40 backdrop-blur-[1px] z-10">
                 <button
                   onClick={() => { setUpgradeMessage("AI bullet rewriter is a Pro feature. Get tailored rewrites for every bullet point on your resume."); setShowUpgrade(true); }}
@@ -359,7 +359,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
 
         <KeywordGapReport missingKeywords={missingKeywords} keywordGap={keywordGap} />
 
-        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6">
+        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6">
           <h2 className="font-serif font-[500] text-[18px] text-[var(--ink)] mb-4">
             ATS Score: <span style={{ color: getScoreColor(atsScore) }}>{animatedScores.atsScore || 0}/100</span>
           </h2>
@@ -380,7 +380,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
         </div>
 
         {topSuggestion && (
-          <div className="bg-[var(--green-light)] border border-[var(--green)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6">
+          <div className="bg-[var(--green-light)] border border-[var(--green)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6">
             <h2 className="font-serif font-[500] text-[18px] text-[var(--green)] mb-3 flex items-center gap-2">
               <Sparkles className="w-5 h-5" /> Top Tip
             </h2>
@@ -388,7 +388,7 @@ ${(results.atsIssues || []).map(i => `  ⚠ ${i}`).join("\n")}
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-8">
           <button onClick={() => router.push("/review")} className="flex-1 font-mono text-[14px] font-medium bg-[var(--coral)] text-white py-[15px] rounded-[3px] shadow-[3px_3px_0_var(--coral-dark)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2">
             <RotateCcw className="w-5 h-5" /> Review Another
           </button>

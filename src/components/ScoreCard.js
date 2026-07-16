@@ -22,11 +22,11 @@ export default function ScoreCard({ score }) {
   const label = getScoreLabel(score);
 
   return (
-    <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 text-center">
+    <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 text-center">
       <h2 className="font-mono text-[12px] text-[var(--ink-soft)] uppercase tracking-[0.06em] mb-4">
         Overall Score
       </h2>
-      <div className="w-44 h-44 mx-auto mb-3">
+      <div className="w-36 sm:w-44 h-36 sm:h-44 mx-auto mb-3">
         <CircularProgressbar
           value={score}
           text={`${score}`}

@@ -16,6 +16,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const products = searchParams.getAll("products");
+    const discountCode = searchParams.get("discount");
 
     if (products.length === 0) {
       return NextResponse.redirect(
@@ -27,11 +28,21 @@ export async function GET(request) {
     const successUrl = `${origin}/success?checkoutId={CHECKOUT_ID}`;
     const returnUrl = `${origin}/pricing`;
 
-    const result = await polar.checkouts.create({
+    const checkoutParams = {
       products,
       successUrl,
       returnUrl,
-    });
+    };
+
+    if (discountCode) {
+      const { items } = await polar.discounts.list({ code: discountCode });
+      const discount = items?.[0];
+      if (discount) {
+        checkoutParams.discount_id = discount.id;
+      }
+    }
+
+    const result = await polar.checkouts.create(checkoutParams);
 
     return NextResponse.redirect(result.url);
   } catch (error) {

@@ -75,7 +75,7 @@ export default function BulletRewriter({ bullets = [], resumeText = "" }) {
   const getCurrentRewrite = () => rewrites[`${selectedBullet}-${selectedTone}`] || bullet.rewrites?.[selectedTone];
 
   return (
-    <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6">
+    <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6">
       <h3 className="font-serif font-[500] text-[18px] text-[var(--ink)] mb-4 flex items-center gap-2">
         <Sparkles className="w-5 h-5 text-[var(--coral)]" /> Bullet Point Rewriter
       </h3>
@@ -108,7 +108,7 @@ export default function BulletRewriter({ bullets = [], resumeText = "" }) {
         )}
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         {TONES.map((tone) => {
           const key = `${selectedBullet}-${tone.key}`;
           const isCurrentLoading = loading[key];

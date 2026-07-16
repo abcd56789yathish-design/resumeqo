@@ -22,21 +22,21 @@ export default function NavbarMobile({ user, links }) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 w-full border-t border-[var(--line)] bg-[var(--paper)] px-8 py-4 flex flex-col gap-3 md:hidden">
+        <div className="absolute top-full left-0 w-full border-t border-[var(--line)] bg-[var(--paper)] px-6 sm:px-8 py-4 flex flex-col gap-3 md:hidden shadow-lg">
           {links.map((l) => (
-            <a key={l.href} href={l.href} className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">{l.label}</a>
+            <a key={l.href} href={l.href} className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] py-2 transition-colors border-b border-[var(--line)]/50 last:border-b-0">{l.label}</a>
           ))}
           {user ? (
             <>
-              <span className="text-sm text-[var(--ink-soft)]">{user.email}</span>
+              <span className="text-sm text-[var(--ink-soft)] mt-2">{user.email}</span>
               <form action="/auth/signout" method="post">
-                <button type="submit" className="font-mono text-[13px] font-medium bg-[var(--coral)] text-white px-[18px] py-[10px] rounded-[3px] text-center mt-2 w-full">
+                <button type="submit" className="font-mono text-[13px] font-medium bg-[var(--coral)] text-white px-[18px] py-[12px] rounded-[3px] text-center mt-2 w-full">
                   Sign out
                 </button>
               </form>
             </>
           ) : (
-            <a href="/login" className="font-mono text-[13px] font-medium bg-[var(--ink)] text-[var(--paper)] px-[18px] py-[10px] rounded-[3px] border border-[var(--ink)] text-center mt-2 block">
+            <a href="/login" className="font-mono text-[13px] font-medium bg-[var(--ink)] text-[var(--paper)] px-[18px] py-[12px] rounded-[3px] border border-[var(--ink)] text-center mt-2 block">
               Sign in ?
             </a>
           )}

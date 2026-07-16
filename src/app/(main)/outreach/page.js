@@ -91,7 +91,7 @@ export default function OutreachPage() {
   };
 
   return (
-    <div className="relative z-[1] min-h-screen py-16 px-8">
+    <div className="relative z-[1] min-h-screen py-12 md:py-16 px-6 sm:px-8">
       <div className="max-w-[640px] mx-auto">
         <div className="text-center mb-10">
           <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${pro ? "text-[var(--green)]" : "text-[var(--coral-dark)]"}`}>
@@ -111,7 +111,7 @@ export default function OutreachPage() {
           </p>
         </div>
 
-        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 space-y-6">
+        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 space-y-6">
           <div>
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Your Resume Text
@@ -156,7 +156,7 @@ export default function OutreachPage() {
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-3">
               Message Type
             </label>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => setMessageType("linkedin")}
                 className={`flex-1 font-mono text-[13px] py-3 px-4 rounded-[3px] transition-all flex items-center justify-center gap-2 ${

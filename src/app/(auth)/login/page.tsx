@@ -52,7 +52,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="bg-[var(--paper-card)] rounded-2xl shadow-sm border border-[var(--line)] p-8">
+        <div className="bg-[var(--paper-card)] rounded-2xl shadow-sm border border-[var(--line)] p-6 sm:p-8">
           <h1 className="text-2xl font-semibold text-[var(--ink)] mb-1">Welcome back</h1>
           <p className="text-sm text-[var(--ink-soft)] mb-8">Sign in to your account to continue.</p>
 

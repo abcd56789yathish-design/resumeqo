@@ -178,7 +178,7 @@ export default function InterviewPage() {
   };
 
   return (
-    <div className="relative z-[1] min-h-screen py-16 px-8">
+    <div className="relative z-[1] min-h-screen py-12 md:py-16 px-6 sm:px-8">
       <div className="max-w-[720px] mx-auto">
         <div className="text-center mb-10">
           <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${pro ? "text-[var(--green)]" : "text-[var(--coral-dark)]"}`}>
@@ -198,7 +198,7 @@ export default function InterviewPage() {
           </p>
         </div>
 
-        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 space-y-6">
+        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 space-y-6">
           <div>
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Upload Resume <span className="text-[var(--ink-soft)] font-normal">(or paste text below)</span>
@@ -250,7 +250,7 @@ export default function InterviewPage() {
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-3">
               Question Type
             </label>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => setMode("behavioral")}
                 className={`flex-1 font-mono text-[13px] py-3 px-4 rounded-[3px] transition-all flex items-center justify-center gap-2 ${
@@ -444,7 +444,7 @@ export default function InterviewPage() {
             {(result.keyPoints?.length > 0 || result.tips?.length > 0) && (
               <div className="grid md:grid-cols-2 gap-6">
                 {result.keyPoints?.length > 0 && (
-                  <div className="bg-[var(--paper-card)] border border-[var(--line)] p-6 rounded-[3px]">
+                  <div className="bg-[var(--paper-card)] border border-[var(--line)] p-4 sm:p-6 rounded-[3px]">
                     <h4 className="font-mono text-[11px] text-[var(--ink-soft)] uppercase tracking-[0.05em] mb-3 flex items-center gap-2">
                       <Lightbulb className="w-4 h-4 text-[var(--coral)]" /> Key Points
                     </h4>
@@ -459,7 +459,7 @@ export default function InterviewPage() {
                   </div>
                 )}
                 {result.tips?.length > 0 && (
-                  <div className="bg-[var(--paper-card)] border border-[var(--line)] p-6 rounded-[3px]">
+                  <div className="bg-[var(--paper-card)] border border-[var(--line)] p-4 sm:p-6 rounded-[3px]">
                     <h4 className="font-mono text-[11px] text-[var(--ink-soft)] uppercase tracking-[0.05em] mb-3 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-[var(--green)]" /> Tips
                     </h4>

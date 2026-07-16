@@ -23,7 +23,7 @@ export default function ImprovementList({ improvements = [] }) {
   const clearApplied = () => setAppliedFixes([]);
 
   return (
-    <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 mb-6">
+    <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-serif font-[500] text-[18px] text-[var(--ink)] flex items-center gap-2">
           <span className="text-[var(--coral)]">✎</span> Line-by-Line Fixes

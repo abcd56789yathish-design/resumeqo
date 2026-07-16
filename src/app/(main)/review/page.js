@@ -169,7 +169,7 @@ export default function ReviewPage() {
   };
 
   return (
-    <div className="relative z-[1] min-h-screen py-16 px-8">
+    <div className="relative z-[1] min-h-screen py-12 md:py-16 px-6 sm:px-8">
       <div className="max-w-[640px] mx-auto">
         <div className="text-center mb-10">
           <div className={`font-mono text-[12px] tracking-[0.06em] uppercase flex items-center justify-center gap-2 mb-4 ${isProPlan ? "text-[var(--green)]" : "text-[var(--ink-soft)]"}`}>
@@ -186,7 +186,7 @@ export default function ReviewPage() {
           </h1>
         </div>
 
-        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-8 space-y-6">
+        <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)] p-6 sm:p-8 space-y-6">
           <UploadBox file={file} onFileSelect={handleFileSelect} onFileRemove={handleFileRemove} />
 
           {error && (

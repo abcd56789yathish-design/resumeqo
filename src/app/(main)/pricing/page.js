@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Check, X, Sparkles, Loader2, ArrowRight, ArrowUp, ArrowDown,
-  RefreshCw, FileEdit, Layers, Eye, AlertTriangle, CheckCircle, PenLine, Copy, WandSparkles, MessageSquare, Send, User
+  RefreshCw, FileEdit, Layers, Eye, AlertTriangle, CheckCircle, PenLine, Copy, WandSparkles, MessageSquare, Send, User, TrendingUp, TrendingDown, Minus
 } from "lucide-react";
 
 const REWRITE_EXAMPLES = [
@@ -79,6 +79,7 @@ const DEMOS = [
   { id: "tailor", label: "Tailor Resume", icon: WandSparkles },
   { id: "outreach", label: "Cold Outreach", icon: MessageSquare },
   { id: "linkedin", label: "LinkedIn About", icon: User },
+  { id: "trends", label: "Keyword Trends", icon: TrendingUp },
 ];
 
 export default function PricingPage() {
@@ -112,6 +113,7 @@ export default function PricingPage() {
         ["Priority support", false],
         ["Interview Q&A Coach", false],
         ["LinkedIn About section generator", false],
+        ["Live keyword trend scanner", false],
       ],
       cta: "Get Started Free",
       action: () => router.push("/review"),
@@ -131,6 +133,7 @@ export default function PricingPage() {
         ["Cold outreach writer (LinkedIn DM & email)", true],
         ["Interview Q&A Coach", true],
         ["LinkedIn About section generator", true],
+        ["Live keyword trend scanner", true],
       ],
       cta: "Upgrade to Pro",
       action: handleProPlan,
@@ -143,7 +146,7 @@ export default function PricingPage() {
     const Icon = demo?.icon || Sparkles;
 
     return (
-      <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[8px_8px_0_rgba(22,33,61,0.1)] p-8 md:p-10">
+      <div className="bg-[var(--paper-card)] border border-[var(--ink)] shadow-[8px_8px_0_rgba(22,33,61,0.1)] p-6 md:p-10">
         <div className="flex items-center gap-2 mb-6">
           <Icon className="w-5 h-5 text-[var(--coral)]" />
           <span className="font-mono text-[12px] text-[var(--coral-dark)] uppercase tracking-[0.06em]">{demo.label}</span>
@@ -445,6 +448,61 @@ export default function PricingPage() {
           </div>
         )}
 
+        {activeDemo === "trends" && (
+          <div className="space-y-4">
+            <p className="text-[15px] text-[var(--ink)] mb-4">Live keyword trends for your target role — updated monthly from real job postings:</p>
+            <div className="border border-[var(--line)] rounded-[3px] p-5 bg-white">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--line)]">
+                <span className="font-mono text-[11px] text-[var(--ink-soft)] uppercase tracking-[0.05em]">Product Manager — July 2026</span>
+                <span className="font-mono text-[10px] bg-[var(--green-light)] text-[var(--green)] px-2 py-0.5 rounded-[2px] border border-[var(--green)]">Live Data</span>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-[var(--green)]" />
+                    <span className="font-mono text-[13px] font-medium">AI/ML Integration</span>
+                  </div>
+                  <span className="font-mono text-[11px] text-[var(--green)]">+42% demand</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-[var(--green)]" />
+                    <span className="font-mono text-[13px] font-medium">Cross-functional Leadership</span>
+                  </div>
+                  <span className="font-mono text-[11px] text-[var(--green)]">+28% demand</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <Minus className="w-4 h-4 text-[#D97706]" />
+                    <span className="font-mono text-[13px] font-medium">Agile/Scrum</span>
+                  </div>
+                  <span className="font-mono text-[11px] text-[#D97706]">Stable</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="w-4 h-4 text-[var(--coral)]" />
+                    <span className="font-mono text-[13px] font-medium">Waterfall Methodology</span>
+                  </div>
+                  <span className="font-mono text-[11px] text-[var(--coral)]">-18% demand</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-[var(--green)]" />
+                    <span className="font-mono text-[13px] font-medium">Data-driven Decisions</span>
+                  </div>
+                  <span className="font-mono text-[11px] text-[var(--green)]">+35% demand</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[var(--ink)] text-white p-4 rounded-[3px] flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-5 h-5 text-[var(--green)]" />
+                <span className="font-mono text-[13px]">Know what to add before it becomes common knowledge.</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 p-4 bg-[var(--ink)] text-white rounded-[3px] flex items-center justify-between flex-wrap gap-3">
           <span className="font-mono text-[13px]">This is a Pro feature</span>
           <button
@@ -461,7 +519,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="relative z-[1] min-h-screen py-16 px-8">
+    <div className="relative z-[1] min-h-screen py-12 md:py-16 px-6 sm:px-8">
       <div className="max-w-[960px] mx-auto">
         <div className="text-center mb-12">
           <div className="font-mono text-[12px] tracking-[0.06em] text-[var(--coral-dark)] uppercase mb-4">
@@ -483,7 +541,7 @@ export default function PricingPage() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`bg-[var(--paper-card)] border p-8 relative ${plan.featured ? "border-[var(--coral)] shadow-[6px_6px_0_var(--coral)]" : "border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)]"}`}
+              className={`bg-[var(--paper-card)] border p-6 sm:p-8 relative ${plan.featured ? "border-[var(--coral)] shadow-[6px_6px_0_var(--coral)]" : "border-[var(--ink)] shadow-[6px_6px_0_rgba(22,33,61,0.08)]"}`}
             >
               {plan.featured && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--coral)] text-white font-mono text-[11px] px-4 py-1 rounded-[3px]">Most Popular</div>
@@ -530,14 +588,14 @@ export default function PricingPage() {
           </h2>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-8 justify-center">
+        <div className="flex gap-2 mb-8 justify-start md:justify-center overflow-x-auto pb-2 -mx-6 sm:-mx-0 px-6 sm:px-0 snap-x snap-mandatory scrollbar-none">
           {DEMOS.map((demo) => {
             const DIcon = demo.icon;
             return (
               <button
                 key={demo.id}
                 onClick={() => setActiveDemo(demo.id)}
-                className={`font-mono text-[12px] px-4 py-2.5 rounded-[3px] transition-all flex items-center gap-2 ${
+                className={`font-mono text-[12px] px-4 py-2.5 rounded-[3px] transition-all flex items-center gap-2 snap-start shrink-0 ${
                   activeDemo === demo.id
                     ? "bg-[var(--ink)] text-white"
                     : "bg-[var(--paper-card)] border border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink)]"
